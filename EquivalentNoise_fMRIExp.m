@@ -1,6 +1,6 @@
 
 %%% no. TRs:  231
-% test
+% test hellooooo
 
 %%%% THis version generates the noise patterns during the experiment
 
