@@ -52,7 +52,7 @@ elseif realScan == 0, keyPressNumbers = {'80', '79'}; end %{'80', '79'} for arro
 %%% SCREEN PARAMETERS
 w.whichScreen = 0;
 
-if realScan == 1,
+if realScan == 1
     % parameters for BU scanner:
     w.ScreenWidth = 51.2;         % horizontal display size
     w.ViewDistance = 82;        % in cm, ideal distance: 1 cm equals 1 visual degree (at 57 cm)
