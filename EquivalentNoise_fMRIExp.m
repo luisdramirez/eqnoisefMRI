@@ -26,8 +26,15 @@ realScan = 0; % 0 = not a scan, 1 = real scan
 
 %%%%%%%%
 [keyboardIndices, productNames, ~] = GetKeyboardIndices;
-if realScan == 1, deviceString=  'Xkeys';
-else deviceString = 'Apple Internal Keyboard / Trackpad';end            % imac: 'Apple Wireless Keyboard'  , laptop: 'Apple Internal Keyboard / Trackpad'
+if realScan == 1, deviceString= 'Xkeys';
+else
+    deviceString = 'USB-HID Keyboard'; 
+    % deviceString = 'Corsair Corsair K95W Gaming Keyboard'; % desk keyboard
+%     deviceString = 'Wired USB Keyboard'; % testing room 207
+    % deviceString = 'Apple Inc. Apple Keyboard'; % testing room 304
+    % deviceString = 'Apple Internal Keyboard / Trackpad'; %my laptop
+
+end            % imac: 'Apple Wireless Keyboard'  , laptop: 'Apple Internal Keyboard / Trackpad'
 
 for i=1:length(productNames)    %for each possible device
     if strcmp(productNames{i},deviceString)     %compare the name to the name you want
@@ -36,12 +43,12 @@ for i=1:length(productNames)    %for each possible device
     end
 end
 
-deviceNumber = 2;
+% deviceNumber = 8;
 if deviceNumber==0 %%error checking
     error('No device by that name was detected');
 end
 
-triggerKey = 46;                % KbName('=+');
+triggerKey = KbName('=+');                % KbName('=+');
 keyList = ones(1,256);          % keys for KbQueueCreate
 keyList(triggerKey) = 0;        % dont want to record trigger
 
@@ -50,7 +57,9 @@ elseif realScan == 0, keyPressNumbers = {'80', '79'}; end %{'80', '79'} for arro
 %%
 %%%%%%%%%
 %%% SCREEN PARAMETERS
-w.whichScreen = 0;
+screens = Screen('Screens');
+useScreen = max(screens);
+w.whichScreen = useScreen;
 
 if realScan == 1
     % parameters for BU scanner:
@@ -86,9 +95,9 @@ stim.numOrient = 2;     % 45 and -45
 
 %%%%% noise characteristics:
 noise.maxContrast = (.99-stim.contrast);
-noise.minContrast = 0;
+noise.minContrast = 0.1;
 noise.numLevels = 5;
-noise.contrastLevels = [noise.minContrast,noise.maxContrast]; %logspace(log10(noise.minContrast),log10(noise.maxContrast),noise.numLevels-1)];
+noise.contrastLevels = [ 0 logspace(log10(noise.minContrast),log10(noise.maxContrast),noise.numLevels-1)]; %logspace(log10(noise.minContrast),log10(noise.maxContrast),noise.numLevels-1)];
 
 %%%% RSVP task:
 RSVP.distractorLetters = ['X' 'L' 'V' 'H' 'S' 'A' 'C' 'P' 'Z' 'Y'];
@@ -113,10 +122,10 @@ t.TR = 2;                           % TR length
 t.blockDur = 16;
 t.rsvpDurPerLetter = .2;               % duration of one letter presentatoin during RSVP
 t.responseDur = 1.5;                % response time
-t.initBlank = 30;           % initial fixation period before starting showing the stimulus
+t.initBlank = 1;           % initial fixation period before starting showing the stimulus
 t.changeDur = .5;           % duration of the change in orientation
 t.flickeringFreq = 10;          % Hz
-t.infoBlock = 2;      % information block: subject is told which task should be done (orientation or RSVP)
+t.infoBlock = 0;      % information block: subject is told which task should be done (orientation or RSVP)
 RefreshDur = 1/w.frameRate;
 t.interChangeInt = 2;        % minimum time between two consecutive change in tilt
 t.confInterval  = 1.5;    % no change during this period at the beginning and double of this period at the end of the block
@@ -187,8 +196,8 @@ conditionMat = zeros(t.numBlocks,3);       % columns--> 1: attended or unattende
 numBlocksWithoutRep = t.numBlocks/t.numRepPerNoiseLevel;
 
 attendedOff = [zeros(numBlocksWithoutRep/numAttCondition,1)];
-stimOrientation = repmat([stim.tilt.*ones(length(attendedOff)/(numAttCondition*2),1);-stim.tilt.*ones(length(attendedOff)/(numAttCondition*2),1)],numAttCondition,1);
-noiseLevel = repmat((1:noise.numLevels)',2*numAttCondition,1);
+stimOrientation = repmat([stim.tilt.*ones(length(attendedOff)/(numAttCondition*stim.numOrient),1);-stim.tilt.*ones(length(attendedOff)/(numAttCondition*stim.numOrient),1)],numAttCondition,1);
+noiseLevel = repmat((1:noise.numLevels)',stim.numOrient*numAttCondition,1);
 
 attendedOnWithRep  = repmat(attendedOff,t.numRepPerNoiseLevel,1);
 stimOrientationWithRep = repmat(stimOrientation,t.numRepPerNoiseLevel,1);
@@ -220,8 +229,8 @@ if realScan == 1
     MyCLUT = load('/Users/linglab/Documents/Experiments/BU_imagingCenter/CRF_tunedNormalization/linearizedCLUT.mat');
     Screen('LoadNormalizedGammaTable', window, abs(MyCLUT.linearizedCLUT));
 else
-    MyCLUT = load('linearizedCLUT.mat');        % !!!! make sure to update this
-    Screen('LoadNormalizedGammaTable', window, MyCLUT.linearizedCLUT);
+%     MyCLUT = load('linearizedCLUT.mat');        % !!!! make sure to update this
+%     Screen('LoadNormalizedGammaTable', window, MyCLUT.linearizedCLUT);
 end
 
 %%%%%%%%%%%%%%%%%%%
@@ -244,7 +253,7 @@ tx = newRect(1); ty = newRect(2);
 %%%%%%%%%%%%%%%%%%%%%%%%%% START THE EXPERIMENT%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% Initialize run
+%%% Initialize runtriggerKey
 rsvpCounter = 0;
 odCounter = 0;
 rsvpTime = 0;
@@ -264,6 +273,7 @@ Screen('FillOval', window, stim.grey, CenterRectOnPoint([0 0 stim.fixationPix st
 Screen('DrawText', window, '~', tx, ty + 40, 255, 128);
 Screen('Flip', window);
 
+KbName(triggerKey)
 KbTriggerWait(triggerKey, deviceNumber);
 
 PsychHID('KbQueueCreate', deviceNumber, keyList);
@@ -312,33 +322,9 @@ for blockCounter = 1:t.numBlocks
     tiltDirection = tiltDirSet{blockCounter};
     nChange = 1;
     
-    tic;
-    for kk=1:numIBFrames
-        
-        if GetSecs > startTime+whenStopIBI(blockCounter)
-            break
-        end
-        
-        Screen('FillOval', window, white, CenterRectOnPoint([0 0 stim.outerFixationPix stim.outerFixationPix], centerX, centerY));
-        Screen('FillOval', window, stim.grey, CenterRectOnPoint([0 0 stim.fixationPix stim.fixationPix], centerX, centerY));
-        Screen('FillOval', window, green, CenterRectOnPoint([0 0 stim.fixationDotPix stim.fixationDotPix], centerX, centerY));
-        
-        if attBlock==0
-            whatLetter = 'R';
-            rsvpOn = 1;
-            odTaskOn = 1 - rsvpOn;
-        else
-            whatLetter = 'O';
-            rsvpOn = 0;
-            odTaskOn = 1 - rsvpOn;
-        end
-        Screen('DrawText', window, whatLetter, tx, ty, 0, 128);
-        Screen('Flip', window, 0, [], 1);
-        
-    end
-    foo = toc;
-    
-    log.durInfoBlock(blockCounter) = foo;
+    rsvpOn = 1; % center task (k or j)
+    odTaskOn = 0; % orientation discrim task
+ 
     
     clear flickTimeVec;
     flickTimeVec = GetSecs:1/(2*t.flickeringFreq):(GetSecs + t.blockDur + .1);      % flicking times for the whole coming block
