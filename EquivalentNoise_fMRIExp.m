@@ -1,7 +1,7 @@
 
 %%% no. TRs:  231
 %%%% THis version generates the noise patterns during the experiment
-
+% hello
 clc
 clear all
 close all
