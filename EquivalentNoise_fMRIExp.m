@@ -155,7 +155,7 @@ end
 checkName = sprintf('%s/*_%s.mat',saveFolder,output.Subject);
 runNo = length(dir(checkName)) + 1;
 output.fileName = sprintf('Data_NoiseEquivalent_Run%i_%s',runNo,output.Subject);
-eyeTrackingFinleName = sprintf('%sNEQ%i',output.Subject,runNo);
+eyeTrackingFileName = sprintf('%sNEQ%i',output.Subject,runNo);
 %%
 %%%%%%%
 %%% CREATE Frequency Patterns
@@ -237,7 +237,7 @@ end
 %%%%%%%%%%%%%%%%%%%
 %%% If eyeTrackOn == 1, eye link setup
 if eyeTrackON == 1
-    [el, edf_filename] = eyeTrackingOn(window, eyeTrackingFinleName, rect, stim.ppd);
+    [el, edf_filename] = eyeTrackingOn(window, eyeTrackingFileName, rect, stim.ppd);
 end
 
 %%
