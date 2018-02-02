@@ -187,7 +187,7 @@ conditionMat = zeros(t.numBlocks,3);       % columns--> 1: attended or unattende
 numBlocksWithoutRep = t.numBlocks/t.numRepPerNoiseLevel;
 
 attendedOff = [zeros(numBlocksWithoutRep/numAttCondition,1)];
-stimOrientation = repmat([stim.tilt.*ones(length(attendedOff)/4,1);-stim.tilt.*ones(length(attendedOff)/4,1)],numAttCondition,1);
+stimOrientation = repmat([stim.tilt.*ones(length(attendedOff)/(numAttCondition*2),1);-stim.tilt.*ones(length(attendedOff)/(numAttCondition*2),1)],numAttCondition,1);
 noiseLevel = repmat((1:noise.numLevels)',2*numAttCondition,1);
 
 attendedOnWithRep  = repmat(attendedOff,t.numRepPerNoiseLevel,1);
