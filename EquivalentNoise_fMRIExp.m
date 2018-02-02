@@ -1,13 +1,12 @@
 
 %%% no. TRs:  231
-% test hellooooo
-
 %%%% THis version generates the noise patterns during the experiment
 
 clc
 clear all
 close all
 
+%%
 %%% PREPARE AND COLLECT INFO
 echo off
 clear all
@@ -48,7 +47,7 @@ keyList(triggerKey) = 0;        % dont want to record trigger
 
 if realScan == 1, keyPressNumbers = {'30', '31'}; % index: counter, middle: clock
 elseif realScan == 0, keyPressNumbers = {'80', '79'}; end %{'80', '79'} for arrows on macbook.   key{1} (left arrow) for counter-clockwise and key{2}(right arrow) for clockwise
-
+%%
 %%%%%%%%%
 %%% SCREEN PARAMETERS
 w.whichScreen = 0;
@@ -66,7 +65,7 @@ w.frameRate = 60;
 w.ScreenSizePixels = Screen('Rect', w.whichScreen); %Scanner display = [0 0 1024 768];
 w.VisAngle = (2*atan2(w.ScreenWidth/2, w.ViewDistance))*(180/pi); % Visual angle of the whole screen
 stim.ppd = round(w.ScreenSizePixels(3)/w.VisAngle); % pixels per degree visual angle
-
+%%
 %%%%%%%%
 %%% STIMULUS PARAMETERS
 stim.sizeDeg = 15;         % in visual degree
@@ -88,7 +87,7 @@ stim.numOrient = 2;     % 45 and -45
 %%%%% noise characteristics:
 noise.maxContrast = (.99-stim.contrast);
 noise.minContrast = 0;
-noise.numLevels = 2;
+noise.numLevels = 5;
 noise.contrastLevels = [noise.minContrast,noise.maxContrast]; %logspace(log10(noise.minContrast),log10(noise.maxContrast),noise.numLevels-1)];
 
 %%%% RSVP task:
@@ -100,7 +99,7 @@ RSVP.probTarget = 0.3;
 pointSize = (2*atan2((2.54/72)/2, w.ViewDistance))*(180/pi);
 stim.letterSizeDegree = .5;
 stim.letterSizePoint = round(stim.letterSizeDegree/pointSize);   % in letter points
-
+%%
 %%%%%%%%%
 %%% TIMING PARAMETERS
 t.theDate = datestr(now,'yymmdd');  %Collect todays date
@@ -121,7 +120,7 @@ t.infoBlock = 2;      % information block: subject is told which task should be 
 RefreshDur = 1/w.frameRate;
 t.interChangeInt = 2;        % minimum time between two consecutive change in tilt
 t.confInterval  = 1.5;    % no change during this period at the beginning and double of this period at the end of the block
-numAttCondition = 2;        % number of attention condition
+numAttCondition = 1;        % number of attention condition
 t.numRepPerNoiseLevel = 3;
 t.numBlocks = noise.numLevels*t.numRepPerNoiseLevel*stim.numOrient*numAttCondition;
 
@@ -136,7 +135,7 @@ whenStopIBI = whenStartIBI + t.infoBlock;
 
 t.totalTime = t.numBlocks*(t.blockDur + t.infoBlock) + t.initBlank;
 output.TotalTRs = t.totalTime/t.TR;
-
+%%
 %%%%%%%%
 %%% INITIATE & GENERATE DATA FILE
 if ~exist(saveFolder,'dir')
@@ -147,7 +146,7 @@ checkName = sprintf('%s/*_%s.mat',saveFolder,output.Subject);
 runNo = length(dir(checkName)) + 1;
 output.fileName = sprintf('Data_NoiseEquivalent_Run%i_%s',runNo,output.Subject);
 eyeTrackingFinleName = sprintf('%sNEQ%i',output.Subject,runNo);
-
+%%
 %%%%%%%
 %%% CREATE Frequency Patterns
 % Gaussian Mask
@@ -170,7 +169,7 @@ Annulus(r_eccen > stim.annulusPix) = 1;
 Mask = Gaussian.*Annulus;
 Mask(Mask<0.1) = 0;
 freqSample = round(stim.freqCPD.*stim.sizeDeg)/xysize;     % cycles/sample
-
+%%
 %%%%%%
 % parameters of events:
 events.letterPresOn = 1;        % whether the letters are shown in the center of the stimulus or it will be just blank
@@ -187,11 +186,11 @@ output.tiltSet = tiltDirSet;
 conditionMat = zeros(t.numBlocks,3);       % columns--> 1: attended or unattended, 2:stim orientation, 3: noise level
 numBlocksWithoutRep = t.numBlocks/t.numRepPerNoiseLevel;
 
-attendedOn = [ones(numBlocksWithoutRep/numAttCondition,1);zeros(numBlocksWithoutRep/numAttCondition,1)];
-stimOrientation = repmat([stim.tilt.*ones(length(attendedOn)/4,1);-stim.tilt.*ones(length(attendedOn)/4,1)],numAttCondition,1);
+attendedOff = [zeros(numBlocksWithoutRep/numAttCondition,1)];
+stimOrientation = repmat([stim.tilt.*ones(length(attendedOff)/4,1);-stim.tilt.*ones(length(attendedOff)/4,1)],numAttCondition,1);
 noiseLevel = repmat((1:noise.numLevels)',2*numAttCondition,1);
 
-attendedOnWithRep  = repmat(attendedOn,t.numRepPerNoiseLevel,1);
+attendedOnWithRep  = repmat(attendedOff,t.numRepPerNoiseLevel,1);
 stimOrientationWithRep = repmat(stimOrientation,t.numRepPerNoiseLevel,1);
 noiseLevelWithRep = repmat(noiseLevel,t.numRepPerNoiseLevel,1);
 
@@ -205,7 +204,7 @@ output.conditionMat = conditionMat;
 %%% stimulus:
 
 sineStim = cos(2.*pi.*freqSample.*cosd(0).*X + 2.*pi.*freqSample.*sind(0).*Y);
-
+%%
 %%% WINDOW SETUP
 AssertOpenGL;       % to verify that this psychtoolbox works based on OpenGL (some versions don't)
 [window, rect] = Screen('OpenWindow',w.whichScreen, stim.grey);
@@ -231,7 +230,7 @@ if eyeTrackON == 1
     [el, edf_filename] = eyeTrackingOn(window, eyeTrackingFinleName, rect, stim.ppd);
 end
 
-
+%%
 %%% CREATE PATCHES
 centerX = w.ScreenSizePixels(3)/2;
 centerY = w.ScreenSizePixels(4)/2;
@@ -240,7 +239,7 @@ Screen('TextSize', window, stim.letterSizePoint);
 bbox = Screen('TextBounds', window, 'X');               % gives the size of the bounding box of the text specified
 newRect = CenterRectOnPoint(bbox, centerX, centerY);    % offset the rect to center it on the x and y stated positions
 tx = newRect(1); ty = newRect(2);
-
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%% START THE EXPERIMENT%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -274,7 +273,7 @@ PsychHID('KbQueueCreate', deviceNumber, keyList);
 if eyeTrackON == 1
     [status, el] = eyeTrackingRecord(el, rect, stim.ppd);
 end
-
+%%
 %%%%%%%%%%%%%%%%%%%
 %%% INTIAL BASELINE----------------------------------------------------
 startTime = GetSecs;
@@ -516,7 +515,7 @@ for blockCounter = 1:t.numBlocks
 end
 
 log.totalScanDuration = GetSecs - startTime;
-
+%%
 TheData.stim = stim;
 TheData.t = t;
 TheData.w = w;
