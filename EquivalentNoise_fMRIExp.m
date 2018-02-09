@@ -15,7 +15,7 @@ KbName('UnifyKeyNames')
 Screen('Preference', 'SkipSyncTests', 1);
 input('hit enter to begin...  ');
 
-%%%%%%%%
+
 
 output.Subject = 'tmp';
 saveFolder = sprintf('./DataSbj%s',output.Subject);
@@ -29,8 +29,7 @@ realScan = 0; % 0 = not a scan, 1 = real scan
 [keyboardIndices, productNames, ~] = GetKeyboardIndices;
 if realScan == 1, deviceString= 'Xkeys';
 else
-    deviceString = 'USB-HID Keyboard'; 
-    % deviceString = 'Corsair Corsair K95W Gaming Keyboard'; % desk keyboard
+    deviceString = 'USB-HID Keyboard'; % desk keyboard
 %     deviceString = 'Wired USB Keyboard'; % testing room 207
     % deviceString = 'Apple Inc. Apple Keyboard'; % testing room 304
     % deviceString = 'Apple Internal Keyboard / Trackpad'; %my laptop
@@ -87,17 +86,17 @@ stim.fixationPix = round(stim.fixationDeg*stim.ppd);
 stim.outerFixationPix = round(1.4 * stim.fixationPix);
 stim.fixationDotPix = round(.06*stim.ppd); % in pixel
 stim.grey = 128;
-stim.contrast = .1;
+stim.contrast = .2; % signal contrast
 stim.amp = stim.contrast * stim.grey;
 stim.freqCPD = 2;
 stim.tilt = 45;     % absolute stimulus orientation
-stim.devTilt = 16;  % magnitude of change in the angle of the grating (in degrees)
+stim.devTilt = 0;  % magnitude of change in the angle of the grating (in degrees)
 stim.numOrient = 2;     % 45 and -45
 
 %%%%% noise characteristics:
 noise.maxContrast = (.99-stim.contrast);
 noise.minContrast = 0.1;
-noise.numLevels = 5;
+noise.numLevels = 5; % number of noise contrasts
 noise.contrastLevels = [ 0 logspace(log10(noise.minContrast),log10(noise.maxContrast),noise.numLevels-1)]; %logspace(log10(noise.minContrast),log10(noise.maxContrast),noise.numLevels-1)];
 
 %%%% RSVP task:
@@ -123,7 +122,7 @@ t.TR = 2;                           % TR length
 t.blockDur = 16;
 t.rsvpDurPerLetter = .2;               % duration of one letter presentatoin during RSVP
 t.responseDur = 1.5;                % response time
-t.initBlank = 1;           % initial fixation period before starting showing the stimulus
+t.initBlank = 30;           % initial fixation period before starting showing the stimulus
 t.changeDur = .5;           % duration of the change in orientation
 t.flickeringFreq = 10;          % Hz
 t.infoBlock = 0;      % information block: subject is told which task should be done (orientation or RSVP)
@@ -208,7 +207,7 @@ conditionMat(:,1) = attendedOnWithRep;
 conditionMat(:,2) = stimOrientationWithRep;
 conditionMat(:,3) = noiseLevelWithRep;
 
-conditionMat = conditionMat(randperm(t.numBlocks),:);
+% conditionMat = conditionMat(randperm(t.numBlocks),:);
 output.conditionMat = conditionMat;
 
 %%% stimulus:
@@ -533,11 +532,6 @@ if eyeTrackON == 1
     Eyelink('ReceiveFile',edf_filename);
 end
 %%%%%%%%%%%%%%%%%%%
-
-disp('------------------------------------------------');
-disp(['OD Task Accuracy:' num2str(nanmean(output.odCorrect))]);
-disp(['Number of Missed Ones: (' num2str(sum(isnan(output.odCorrect))),'/', num2str(numel(output.odCorrect)), ')']);
-disp('------------------------------------------------');
 
 disp('------------------------------------------------');
 disp(['RSVP Task Accuracy:' num2str(nanmean(output.rsvpCorrect))]);
